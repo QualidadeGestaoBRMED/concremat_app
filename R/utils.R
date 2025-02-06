@@ -1,5 +1,3 @@
-
-
 get_card_info <- function(card_id) {
   query <- Query$new()
   query$query('get_card', query_get_card)
@@ -34,13 +32,13 @@ get_parent_card_id <- function(res) {
 }
 
 make_df_fields <- function(fields) {
-  df_fields <- fields |> as.tibble()
+  df_fields <- fields |> as_tibble()
   
   df_fields <- df_fields |> 
     mutate(
       value = ifelse(
         str_detect(report_value, "http"),
-        paste0('<a href="', report_value, '" target="_blank">Acessar Anexo</a>'),
+        paste0(' <a href="', report_value, '" target="_blank" download>📥 Baixar Anexo</a>'),
         report_value
       )
     )

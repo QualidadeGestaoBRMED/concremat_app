@@ -8,4 +8,12 @@ shiny_secret <- Sys.getenv("shiny_secret")
 
 rsconnect::setAccountInfo(name = shiny_name, token = shiny_token, secret = shiny_secret)
 
-rsconnect::deployApp(appDir = getwd())
+rsconnect::deployApp(appDir = getwd(), launch.browser = T,account = "tzvg1e-projetos0-brmed")
+
+
+
+
+rsconnect::accounts()
+
+
+

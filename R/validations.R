@@ -1,5 +1,6 @@
 
 
+
 is_concremat_card <- function(res) {
   any(res$data$card$fields$name == "Portal Concremat")
 }

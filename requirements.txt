@@ -4,5 +4,3 @@ DT
 tidyverse
 ghql
 jsonlite
-tidyverse
-jsonlite

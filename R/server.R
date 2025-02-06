@@ -31,23 +31,32 @@ server <- function(input, output, session) {
 
   output$card_error <- renderText({
     if (is.null(dados_card())) {
-      return("ID do card inválido. Certifique-se que o card está")
+      return("Card não está na fase selecionada ou id do card incorreto. Favor verificar ID inserido")
     }
   })
 
-  output$tabela <- renderDataTable({
-    dados <- dados_card()
-    datatable(
-      dados,
-      escape = FALSE,
-      options = list(
-        pageLength = 500, searching = FALSE, lengthChange = FALSE,
-        paging = FALSE, info = FALSE, ordering = FALSE, processing = TRUE
-      ),
-      selection = "none",
-      filter = "none",
-      style = "bootstrap"
-    )
+  output$tabela <- reactable::renderReactable({
+
+    df <- dados_card()
+
+
+    if ( !is.null( df ) ){
+
+    reactable(df,
+        columns = list(
+        value = colDef( html = TRUE)
+       ), 
+      defaultPageSize = 100, 
+      searchable = FALSE, 
+      pagination = FALSE, 
+      highlight = TRUE, 
+      bordered = TRUE, 
+      striped = TRUE, 
+      compact = FALSE, 
+      fullWidth = TRUE)
+    } 
+
+   
   })
 
   output$tabela_visivel <- reactive({
@@ -99,4 +108,25 @@ server <- function(input, output, session) {
       )
     }
   })
+
+
+  # output$teste <- reactable::renderReactable({
+  #   df <- dados_card()
+
+  #   reactable(df,
+  #       columns = list(
+  #       value = colDef( html = TRUE)
+  #      ), 
+  #     defaultPageSize = 100, 
+  #     searchable = FALSE, 
+  #     pagination = FALSE, 
+  #     highlight = TRUE, 
+  #     bordered = TRUE, 
+  #     striped = TRUE, 
+  #     compact = FALSE, 
+  #     fullWidth = TRUE)
+
+
+   
+  # })
 }

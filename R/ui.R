@@ -24,7 +24,7 @@ ui <- fluidPage(
         style = "display: flex; align-items: center; column-gap: 10px;",
         div(
           style = "display: flex; flex-direction: column; align-items: center; margin: 0; width: 260px;",
-          p("fase_id"),
+          p("Etapa de Aprovação"),
           selectInput(
             inputId = "fase",
             label = NULL,
@@ -85,5 +85,8 @@ ui <- fluidPage(
   ),
   
   textOutput("card_error"),
-  dataTableOutput("tabela")
+  #dataTableOutput("tabela"),
+  reactable::reactableOutput("tabela"),
+  #reactable::reactableOutput("teste")
+  
 )
