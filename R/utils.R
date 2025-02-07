@@ -34,16 +34,45 @@ get_parent_card_id <- function(res) {
 make_df_fields <- function(fields) {
   df_fields <- fields |> as_tibble()
   
+  
+  print("Valores originais de report_value:")
+  print(df_fields$report_value)
+  
+  
   df_fields <- df_fields |> 
+    rowwise() |>  
     mutate(
-      value = ifelse(
-        str_detect(report_value, "http"),
-        paste0(' <a href="', report_value, '" target="_blank" download>📥 Baixar Anexo</a>'),
-        report_value
+      report_value = trimws(report_value), 
+      
+      
+      value = case_when(
+        str_detect(report_value, "http") ~ paste_links_for_download(report_value),
+        report_value == "" ~ "Nenhum valor disponível",
+        TRUE ~ report_value
       )
-    )
+    ) |> 
+    ungroup()
   
-  df_fields <- df_fields |> select(name, value)
-  
-  return(df_fields)
+  return(df_fields |> select(name, value))
 }
+
+paste_links_for_download <- function(report_value) {
+  print(paste("Valor original de report_value:", report_value))  
+  
+  links <- str_split(report_value, ",")[[1]]
+  links <- trimws(links) 
+
+
+  print(paste( "link apóes extração", links, sep = " " ))
+
+  # Cria links HTML
+  links_html <- sapply(seq_along(links), function(i) {
+    print(paste("Link atual:", links[i])) 
+    paste0('<a href="', links[i], '" target="_blank" download>📥 Baixar Arquivo ', i, '</a>')
+  })
+  
+  return(paste(links_html, collapse = "<br>"))
+}
+
+
+
