@@ -1,6 +1,7 @@
 library(shiny)
-getwd()
+print( getwd()) 
 
+setwd(getwd())
 
 fs::dir_tree()
 
