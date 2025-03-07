@@ -1,0 +1,113 @@
+make_df_fields <- function(fields) {
+ 
+  df_fields <- fields |> as_tibble()
+   
+  df_fields <- df_fields |> 
+    rowwise() |>  
+    mutate(
+      report_value = trimws(report_value),      
+      
+      value = case_when(
+        str_detect(report_value, "http") ~ paste_links_for_download(report_value),
+        report_value == "" ~ "Nenhum valor disponível",
+        TRUE ~ report_value
+      )
+    ) |> 
+    ungroup()
+  
+  return(df_fields |> select(name, value))
+}
+
+paste_links_for_download <- function(report_value) {
+  
+  
+  links <- str_split(report_value, ",")[[1]]
+  links <- trimws(links)  
+
+  
+  links_html <- sapply(seq_along(links), function(i) {
+    
+    paste0('<a href="', links[i], '" target="_blank" download>📥 Baixar Arquivo ', i, '</a>')
+  })
+  
+  return(paste(links_html, collapse = "<br>"))
+}
+
+
+get_doc_url_file <- function( res, phase ){
+
+
+  doc_selected <- switch(
+    phase, 
+    "Aguardando Aprovação (PGR)" =  "Documento Segurança (PDF)" ,
+    "Aguardando Aprovação (PCMSO)" = "Documento Saúde (PDF)"
+  )
+
+  url_file <- filter(res$data$card$fields, res$data$card$fields$name  == doc_selected ) |> pull(report_value)
+   
+  return(url_file)
+  
+}
+
+
+make_Presigned_url <- function( file_name ){
+
+  res_presigned_url <- conn$exec(query = query$queries$pre_signed_url,   list( file = "", file_name = file_name )) |> fromJSON()
+  
+  url <- res_presigned_url$data$createPresignedUrl$url
+  
+  return(url)
+}
+
+
+
+processing_phase_cards <- function(list, phase) {
+
+  phase <- as.character(phase)
+  
+  df_phase_cards <- lapply(list, function(x) {
+    x$phase$cards$edges |> unnest(cols = c(node.fields))
+  })
+  
+  df_phase_cards <- df_phase_cards |> 
+    bind_rows() |> 
+    filter(name == "Portal Concremat") |> 
+    select(id = node.id, title = node.title) 
+
+  fase <- switch(phase,
+    "315351874" =  "Aguardando Aprovação (PGR)",
+    "315003827" =  "Aguardando Aprovação (PCMSO)"
+  )
+
+  df_phase_cards <- df_phase_cards |> add_column( fase = fase )
+  
+  return(df_phase_cards)
+}
+
+
+make_df_return <- function( res, phase_name ){
+  
+  child_cards <- get_child_card_id(res, phase_name) |> str_split(pattern = ",")
+
+  if ( length(child_cards) > 0 ){
+
+    child_cards_df <- lapply(child_cards, function(x){
+      motivos <- get_card_info(x)
+      pivot_wider(motivos$data$card$fields,names_from = name, values_from = report_value)
+      }
+    ) |> bind_rows()
+
+
+    child_cards_df$`Motivo da Reprovação`  <- child_cards_df$`Motivo da Reprovação` |> str_extract(pattern = "(?<=Motivo: ).*")
+
+    child_cards_df$`Data da Reprovação` <-  paste( "Reprovado em: ",   child_cards_df$`Data da Reprovação`  )
+
+    child_cards_df <- child_cards_df |> select( `Data da Reprovação`, `Motivo da Reprovação`) |> rename( name = 1, value = 2 )
+
+    child_cards_df <- child_cards_df |> filter( value != "" )
+
+    return(child_cards_df)
+  }
+
+  }
+

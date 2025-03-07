@@ -1,16 +1,11 @@
 library(shiny)
 library(bslib)
 
+
+
 ui <- fluidPage(
   
-  # theme = bs_theme(
-  #   version = 4,
-  #   bootswatch = "flatly",
-  #   primary = "#193b4f",  # Cor principal personalizada
-  #   secondary = "#84aed4",  # Cor secundária personalizada
-  #   base_font = "Arial"  # Fonte base personalizada
-  # ),
-  
+ 
   div(
     style = "display: flex; justify-content: space-between;",
     titlePanel("App Concremat: Aprovação documental"),
@@ -25,28 +20,39 @@ ui <- fluidPage(
         div(
           style = "display: flex; flex-direction: column; align-items: center; margin: 0; width: 260px;",
           p("Etapa de Aprovação"),
-          selectInput(
-            inputId = "fase",
+          shinyWidgets::virtualSelectInput(
+            inputId = "card_id",
             label = NULL,
             choices = list(
-              "Aprovação do PGR" = "Aguardando Aprovação (PGR)",
-              "Aprovação do PCMSO" = "Aguardando Aprovação (PCMSO)"
-            )
+              "Aprovação PGR" = NULL,
+              "Aprovação PCMSO" = NULL
+            ),
+            multiple = FALSE,
+            disableOptionGroupCheckbox = FALSE,
+            dropboxWrapper = "body"
           )
         ),
         
-        div(
-          style = "display: flex; flex-direction: column; align-items: center; margin: 0; width: 120px;",
-          p("Id do Card"),
-          textInput(inputId = "card_id", label = NULL)
-        ),
+        # div(
+        #   style = "display: flex; flex-direction: column; align-items: center; margin: 0; width: 120px;",
+        #   p("Id do Card"),
+        #   textInput(inputId = "card_id", label = NULL)
+        # ),
         
         div(
           style = "margin-top: 15px;",
-          actionButton("buscar", "Buscar Card", icon = icon("search"))
+          actionButton("buscar", "Buscar Card", icon = icon("search"),style = "padding: 5px 10px; font-size: 12px;"  ),
+         
+          conditionalPanel(
+            condition ="output.tabela_visivel == true", 
+            shiny::downloadButton(outputId = "download_arquivo",label = "baixar arquivo",
+            style = "padding: 5px 10px; font-size: 12px;")
+        )
+          
         )
       ),
-      
+
+          
       div(
         style = "display: flex; align-items: center; column-gap: 10px;",
         div(
@@ -54,6 +60,9 @@ ui <- fluidPage(
             condition = "output.tabela_visivel == true",
             style = "display: flex; flex-direction: column; align-items: start; width: 200px; font-size: 15px;",
             p("Documento Aprovado:"),
+           
+              
+            
             column(
               width = 5,
               shiny::radioButtons("resposta2", NULL, c("Sim", "Não"), selected = character(0))
@@ -69,6 +78,15 @@ ui <- fluidPage(
             textAreaInput(
               inputId = "resposta_reprovada",
               label = NULL
+            ),
+            fileInput(
+              inputId = "file_upload",
+              label = "Anexar arquivo" ,
+              multiple = T,
+              placeholder = "Selecione um arquivo",
+              capture = T,
+              buttonLabel = "Buscar"          
+
             )
           )
         ),
@@ -83,10 +101,13 @@ ui <- fluidPage(
       )
     )
   ),
+
+  mainPanel(
   
-  textOutput("card_error"),
-  #dataTableOutput("tabela"),
-  reactable::reactableOutput("tabela"),
-  #reactable::reactableOutput("teste")
+  textOutput("card_error"), 
+  reactable::reactableOutput("tabela")
+  )
+ 
+  
   
 )
