@@ -158,10 +158,7 @@ server <- function(input, output, session) {
 
     
 
-    field_ids <- switch(card_phase,
-      "Aguardando Aprovação (PGR)" = list(aprovado = "documento_aprovado", justificativa = "motivos_da_rejei_o", anexo = "outros_documentos"),
-      "Aguardando Aprovação (PCMSO)" = list(aprovado = "pcmso_aprovado", justificativa = "observa_o_do_pcmso", anexo = "outros_documentos_pcmso")
-    )
+    field_ids <-get_field_ids(card_phase)
 
     update_card_fields( card_id = 1076253364, field_id =  field_ids$anexo , df_anexos$url_send_pipefy |>  as.list() )
 

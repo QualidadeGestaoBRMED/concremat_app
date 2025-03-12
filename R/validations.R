@@ -28,3 +28,8 @@ validate_card <- function(res, expected_phase) {
   
   return(TRUE)
 }
+
+
+is_column_present <- function( df, column ){
+  column %in% names(df)
+}

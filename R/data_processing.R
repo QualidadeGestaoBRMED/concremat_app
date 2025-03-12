@@ -85,29 +85,38 @@ processing_phase_cards <- function(list, phase) {
 }
 
 
-make_df_return <- function( res, phase_name ){
+make_df_return <- function(res, phase_name) {
   
   child_cards <- get_child_card_id(res, phase_name) |> str_split(pattern = ",")
-
-  if ( length(child_cards) > 0 ){
-
-    child_cards_df <- lapply(child_cards, function(x){
+  
+  if (length(child_cards) > 0) {
+    
+    child_cards_df <- lapply(child_cards, function(x) {
       motivos <- get_card_info(x)
-      pivot_wider(motivos$data$card$fields,names_from = name, values_from = report_value)
+      motivos <- pivot_wider(motivos$data$card$fields, names_from = name, values_from = report_value)
+      
+      if (is_column_present(df = motivos, "Outros documentos")) {
+        links <- motivos |> pull('Outros documentos') |> paste_links_for_download()
+        motivos$`Motivo da Reprovação` <- motivos$`Motivo da Reprovação` |> paste("<br>", links)
       }
-    ) |> bind_rows()
-
-
-    child_cards_df$`Motivo da Reprovação`  <- child_cards_df$`Motivo da Reprovação` |> str_extract(pattern = "(?<=Motivo: ).*")
-
-    child_cards_df$`Data da Reprovação` <-  paste( "Reprovado em: ",   child_cards_df$`Data da Reprovação`  )
-
-    child_cards_df <- child_cards_df |> select( `Data da Reprovação`, `Motivo da Reprovação`) |> rename( name = 1, value = 2 )
-
-    child_cards_df <- child_cards_df |> filter( value != "" )
-
+     return(motivos) 
+    })
+    
+    child_cards_df <- child_cards_df |> bind_rows()
+    
+    child_cards_df$`Motivo da Reprovação` <- child_cards_df$`Motivo da Reprovação` |> 
+      str_extract(pattern = "(?<=Motivo: ).*")
+    
+    child_cards_df$`Data da Reprovação` <- paste("Reprovado em: ", child_cards_df$`Data da Reprovação`)
+    
+    child_cards_df <- child_cards_df |> 
+      select(`Data da Reprovação`, `Motivo da Reprovação`) |> 
+      rename(name = 1, value = 2)
+    
+    child_cards_df <- child_cards_df |> filter(value != "")
+    
     return(child_cards_df)
   }
+}
 
-  }
 

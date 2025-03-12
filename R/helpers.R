@@ -33,8 +33,8 @@ generate_modal_text <- function(response) {
 
 get_field_ids <- function(card_phase) {
   field_mapping <- list(
-    "Aguardando Aprovação (PGR)" = list(aprovado = "documento_aprovado", justificativa = "motivos_da_rejei_o"),
-    "Aguardando Aprovação (PCMSO)" = list(aprovado = "pcmso_aprovado", justificativa = "observa_o_do_pcmso")
+    "Aguardando Aprovação (PGR)" =  list(aprovado = "documento_aprovado", justificativa = "motivos_da_rejei_o", anexo = "outros_documentos"),
+    "Aguardando Aprovação (PCMSO)" = list(aprovado = "pcmso_aprovado", justificativa = "observa_o_do_pcmso", anexo = "outros_documentos_pcmso")
   )
 
   return(field_mapping[[card_phase]])
@@ -44,6 +44,7 @@ clear_inputs <- function(session) {
   updateTextInput(session, "card_id", value = "")
   updateRadioButtons(session, "resposta2", selected = character(0))
   updateTextAreaInput(session, "resposta_reprovada", value = "")
+  shiny::file
 }
 
 
