@@ -1,10 +1,29 @@
 library(shiny)
 library(bslib)
 
+js <- "
+$(document).ready(function(){
+  var $justifique = $('#justifique');
 
+  // Garante que o painel esteja oculto ao carregar a página
+  $justifique.hide();
+
+  $justifique.on('show', function(){
+    var $this = $(this);
+    if (!$this.is(':visible')) { // Só anima se estiver oculto
+      $this.hide().show(500);
+    }
+  }).on('hide', function(){
+    var $this = $(this);
+    setTimeout(function(){
+      $this.show().hide(500);
+    });
+  });
+});
+"
 
 ui <- fluidPage(
-  
+  tags$head(tags$script(HTML(js))),
   
   div(
     style = "display: flex; justify-content: space-between;",
@@ -61,6 +80,7 @@ ui <- fluidPage(
         style = "display: flex; flex-direction: column;",
         
         conditionalPanel(
+          id = "justifique",
           condition = "input.resposta2 == 'Não'",
           style = "display: flex; flex-direction: column;",
           div(
