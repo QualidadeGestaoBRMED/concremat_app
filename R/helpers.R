@@ -44,7 +44,7 @@ clear_inputs <- function(session) {
   updateTextInput(session, "card_id", value = "")
   updateRadioButtons(session, "resposta2", selected = character(0))
   updateTextAreaInput(session, "resposta_reprovada", value = "")
-  shiny::file
+  
 }
 
 

@@ -17,11 +17,11 @@ processing_url_to_value <- function( PreSignedUrl ){
     return(caminho_arquivo)
   }
 
-make_put_file <- function ( file, pre_signed_url ){
+make_put_file <- function ( file_path, pre_signed_url ){
 
   res <- httr::PUT(
     pre_signed_url,
-    body = httr::upload_file(file)
+    body = httr::upload_file(file_path)
     )
   
   return(res$status_code)

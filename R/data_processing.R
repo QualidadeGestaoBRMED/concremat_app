@@ -105,7 +105,7 @@ make_df_return <- function(res, phase_name) {
     child_cards_df <- child_cards_df |> bind_rows()
     
     child_cards_df$`Motivo da Reprovação` <- child_cards_df$`Motivo da Reprovação` |> 
-      str_extract(pattern = "(?<=Motivo: ).*")
+      str_extract(pattern = "(?s)(?<=Motivo: ).*")
     
     child_cards_df$`Data da Reprovação` <- paste("Reprovado em: ", child_cards_df$`Data da Reprovação`)
     

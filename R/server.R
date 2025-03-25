@@ -2,7 +2,7 @@ server <- function(input, output, session) {
 
   card_data <- reactiveValues( all_cards = NULL )
 
-  # Inicializar os dados ao carregar o app
+  
   observe({
     
     pgr_cards <- get_cards_all_cards_by_phase(315351874) |> processing_phase_cards(phase = 315351874)
@@ -14,18 +14,7 @@ server <- function(input, output, session) {
     
   })
 
-  # Atualizar os cards ao clicar no botão "enviar"
-  # observeEvent(input$enviar, {
-
-  #   Sys.sleep(2)
-  #   pgr_cards <- get_cards_all_cards_by_phase(315351874) |> processing_phase_cards(phase = 315351874)
-  #   pcmso_cards <- get_cards_all_cards_by_phase(315003827) |> processing_phase_cards(phase = 315003827)
-
-  #   card_data$all_cards <- bind_rows(pgr_cards, pcmso_cards)
-  # })
-
-  # Criar listas de títulos para o seletor
-  pgr_choises <- reactive({
+   pgr_choises <- reactive({
     
     req(card_data$all_cards)
     card_data$all_cards |> filter(fase == "Aguardando Aprovação (PGR)") |> pull(title)
@@ -65,10 +54,6 @@ server <- function(input, output, session) {
   dados_card <- eventReactive(input$buscar, {
     
     req(input$card_id)
-
-
-    
- 
 
     card_phase <- get_card_phase(input$card_id, card_data$all_cards) 
     id_do_card <- get_card_id(input$card_id, card_data$all_cards)
@@ -132,7 +117,12 @@ server <- function(input, output, session) {
     !is.null(dados_card()$resposta_api) && length(dados_card()$resposta_api) > 0
   })
 
+
+
   outputOptions(output, "tabela_visivel", suspendWhenHidden = FALSE)
+
+
+
 
   update_card <- observeEvent(input$enviar, {
 
@@ -151,16 +141,16 @@ server <- function(input, output, session) {
     df_anexos$url_send_pipefy <- map_chr( df_anexos$pre_url, processing_url_to_value  )
 
     df_anexos$status_code <- map2( .x = df_anexos$datapath, .y = df_anexos$pre_url, function(.x, .y){
-      make_put_file(file = .x, pre_signed_url = .y )
+      make_put_file(file_path = .x, pre_signed_url = .y )
     })
 
-    update_card_fields( card_id = 1076253364, field_id =  "outros_documentos", df_anexos$url_send_pipefy |>  as.list() )
+    update_card_fields( card_id = id_do_card, field_id =  "outros_documentos", df_anexos$url_send_pipefy |>  as.list() )
 
-    
+    #browser()
 
     field_ids <-get_field_ids(card_phase)
 
-    update_card_fields( card_id = 1076253364, field_id =  field_ids$anexo , df_anexos$url_send_pipefy |>  as.list() )
+    update_card_fields( card_id = id_do_card, field_id =  field_ids$anexo , df_anexos$url_send_pipefy |>  as.list() )
 
     success_response <- update_card_fields(card_id = id_do_card, field_id = field_ids$aprovado, input$resposta2)    
 
@@ -181,20 +171,9 @@ server <- function(input, output, session) {
       pgr_cards <- get_cards_all_cards_by_phase(315351874) |> processing_phase_cards(phase = 315351874)
       pcmso_cards <- get_cards_all_cards_by_phase(315003827) |> processing_phase_cards(phase = 315003827)
 
-      card_data$all_cards <- bind_rows(pgr_cards, pcmso_cards)
+      card_data$all_cards <- bind_rows(pgr_cards, pcmso_cards)    
       
-
-      
-
       clear_inputs(session)
-
-     
-
-
-      
-     
-        
-   
 
     } else {
       sendSweetAlert(
