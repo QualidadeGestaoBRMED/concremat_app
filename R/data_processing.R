@@ -34,19 +34,39 @@ paste_links_for_download <- function(report_value) {
 }
 
 
-get_doc_url_file <- function( res, phase ){
-
-
-  doc_selected <- switch(
-    phase, 
-    "Aguardando Aprovação (PGR)" =  "Documento Segurança (PDF)" ,
-    "Aguardando Aprovação (PCMSO)" = "Documento Saúde (PDF)"
-  )
-
-  url_file <- filter(res$data$card$fields, res$data$card$fields$name  == doc_selected ) |> pull(report_value)
-   
-  return(url_file)
+get_doc_url_file <- function(res, phase){
+  # debug: imprime o phase recebido
+  message("DEBUG >> phase recebido: ", phase)
   
+  doc_selected <- switch(
+    phase,
+    "Aguardando Aprovação (PGR)"  = "Documento Segurança (PDF)",
+    "Aguardando Aprovação (PCMSO)" = "Documento Saúde (PDF)",
+    NULL
+  )
+  # debug: imprime o doc_selected
+  message("DEBUG >> doc_selected: ", if (is.null(doc_selected)) "NULL" else doc_selected)
+  
+  if (is.null(doc_selected)) {
+    stop("get_doc_url_file(): fase não mapeada → ", phase)
+  }
+  
+  # debug: imprime número de linhas antes do filter
+  message("DEBUG >> nrow(fields): ", nrow(res$data$card$fields))
+  message("DEBUG >> nomes das colunas: ", paste(names(res$data$card$fields), collapse = ", "))
+  
+  url_file <- res$data$card$fields |>
+    filter(name %in% doc_selected) |>
+    pull(report_value)
+  
+  # debug: resultado do pull()
+  message("DEBUG >> url_file length: ", length(url_file))
+  
+  if (length(url_file) == 0) {
+    warning("get_doc_url_file(): campo ‘", doc_selected, "’ não encontrado")
+    return(NA_character_)
+  }
+  url_file
 }
 
 
