@@ -190,7 +190,7 @@ server <- function(input, output, session) {
         
         sendSweetAlert(
           title = "Gerando Arquivo",
-          text = "Seu arquivo será baixando automaticamente assim que ficar pronto",
+          text = "Seu arquivo será baixado automaticamente assim que ficar pronto",
           type = "info"
 
         )
