@@ -25,10 +25,59 @@ update_card_fields <- function(card_id, field_id, new_value) {
 
 
 get_parent_card_id <- function(res) {
-  card_id <- res$data$card$parent_relations |> 
-    unnest(cols = c(cards)) |> 
-    filter(name == "Conexão SST") |> 
-    pull(id)  
+  parent_relations <- res$data$card$parent_relations
+  expected_parent_names <- c("Conexão SST", "SST (CMAT)", "SST")
+  
+  if (is.null(parent_relations) || nrow(parent_relations) == 0) {
+    warning("DEBUG Pipefy: parent_relations vazio no card selecionado.")
+    return(character(0))
+  }
+  
+  relations_expanded <- parent_relations |>
+    unnest(cols = c(cards), keep_empty = TRUE)
+  
+  if ("name" %in% names(relations_expanded)) {
+    relations_expanded <- relations_expanded |>
+      filter(name %in% expected_parent_names)
+  }
+  
+  card_id <- character(0)
+  
+  if ("id" %in% names(relations_expanded)) {
+    card_id <- relations_expanded |>
+      pull(id)
+  } else if ("cards.id" %in% names(relations_expanded)) {
+    card_id <- relations_expanded |>
+      pull("cards.id")
+  } else if ("cards" %in% names(relations_expanded)) {
+    if (is.character(relations_expanded$cards)) {
+      card_id <- relations_expanded$cards
+    }
+  }
+  
+  card_id <- card_id |>
+    unique()
+  card_id <- card_id[!is.na(card_id)]
+  card_id <- card_id[card_id != ""]
+  
+  if (length(card_id) == 0) {
+    available_names <- if ("name" %in% names(parent_relations)) {
+      paste(unique(parent_relations$name), collapse = ", ")
+    } else {
+      "indisponível"
+    }
+    
+    warning(
+      paste0(
+        "DEBUG Pipefy: nenhuma parent relation encontrada. Esperadas: [",
+        paste(expected_parent_names, collapse = ", "),
+        "]. Disponíveis no card: [",
+        available_names,
+        "]."
+      )
+    )
+  }
+  
   return(card_id)
 }
 

@@ -1,12 +1,48 @@
 get_card_phase <- function(card_title, card_table) { 
- 
+  card_phase <- card_table |>
+    filter(title == card_title) |>
+    pull(fase) |>
+    unique()
   
-  return( card_table$fase[card_table$title == card_title])
+  if (length(card_phase) == 0) {
+    return(NA_character_)
+  }
+  
+  if (length(card_phase) > 1) {
+    warning(
+      paste0(
+        "DEBUG helpers: mais de uma fase encontrada para o título '",
+        card_title,
+        "'. Usando a primeira."
+      )
+    )
+  }
+  
+  return(card_phase[[1]])
 }
 
 
 get_card_id <- function(card_title, card_table) {
-  return(card_table$id[card_table$title == card_title])
+  card_id <- card_table |>
+    filter(title == card_title) |>
+    pull(id) |>
+    unique()
+  
+  if (length(card_id) == 0) {
+    return(NA_character_)
+  }
+  
+  if (length(card_id) > 1) {
+    warning(
+      paste0(
+        "DEBUG helpers: mais de um id encontrado para o título '",
+        card_title,
+        "'. Usando o primeiro."
+      )
+    )
+  }
+  
+  return(card_id[[1]])
 }
 
 

@@ -84,7 +84,8 @@ processing_phase_cards <- function(list, phase) {
   df_phase_cards <- df_phase_cards |> 
     bind_rows() |> 
     filter(name == "Portal Concremat") |> 
-    select(id = node.id, title = node.title) 
+    select(id = node.id, title = node.title) |>
+    distinct(id, title)
 
   fase <- switch(phase,
     "315351874" =  "Aguardando Aprovação (PGR)",
@@ -132,4 +133,3 @@ make_df_return <- function(res, phase_name) {
   
   return(tibble(name = character(), value = character()))
 }
-

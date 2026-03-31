@@ -14,17 +14,17 @@ server <- function(input, output, session) {
     
   })
 
-   pgr_choises <- reactive({
+  pgr_choises <- reactive({
     
     req(card_data$all_cards)
-    card_data$all_cards |> filter(fase == "Aguardando Aprovação (PGR)") |> pull(title)
+    card_data$all_cards |> filter(fase == "Aguardando Aprovação (PGR)") |> pull(title) |> unique()
     
   })
 
   pcmso_choises <- reactive({
     
     req(card_data$all_cards)
-    card_data$all_cards |> filter(fase == "Aguardando Aprovação (PCMSO)") |> pull(title)
+    card_data$all_cards |> filter(fase == "Aguardando Aprovação (PCMSO)") |> pull(title) |> unique()
     
   })
 
@@ -58,6 +58,11 @@ server <- function(input, output, session) {
     card_phase <- get_card_phase(input$card_id, card_data$all_cards) 
     id_do_card <- get_card_id(input$card_id, card_data$all_cards)
     
+    if (is.na(card_phase) || is.na(id_do_card)) {
+      warning("DEBUG buscar: não foi possível resolver fase/id para o card selecionado.")
+      return(NULL)
+    }
+    
     message(
       "DEBUG buscar: titulo='",
       input$card_id,
@@ -81,7 +86,14 @@ server <- function(input, output, session) {
       
       doc_file <- get_doc_url_file( res = resposta_api, phase =  card_phase)
       parent_card_id <- get_parent_card_id(res = resposta_api)
-      parent_card <- get_card_info( card_id = parent_card_id)
+      
+      if (length(parent_card_id) == 0) {
+        warning("DEBUG buscar: card pai não encontrado nas parent_relations.")
+        removeModal()
+        return(NULL)
+      }
+      
+      parent_card <- get_card_info( card_id = parent_card_id[[1]])
       resposta_api <- make_df_fields(fields =  parent_card$data$card$fields)
       resposta_api <- bind_rows( resposta_api , child_df )
 
