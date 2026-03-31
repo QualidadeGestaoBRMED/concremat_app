@@ -99,7 +99,7 @@ processing_phase_cards <- function(list, phase) {
 
 make_df_return <- function(res, phase_name) {
   
-  child_cards <- get_child_card_id(res, phase_name) |> str_split(pattern = ",")
+  child_cards <- get_child_card_id(res, phase_name)
   
   if (length(child_cards) > 0) {
     
@@ -129,6 +129,7 @@ make_df_return <- function(res, phase_name) {
     
     return(child_cards_df)
   }
+  
+  return(tibble(name = character(), value = character()))
 }
-
 

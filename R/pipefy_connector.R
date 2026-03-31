@@ -108,12 +108,51 @@ get_cards_all_cards_by_phase <- function(phase_id) {
 
 get_child_card_id <- function(res, phase_name ) {
 
-  child_card_name <- ifelse( phase_name == "Aguardando Aprovação (PGR)", yes = "Historico Reprovação", "Historico de Reprovação" )
+  child_relations <- res$data$card$child_relations
+  current_phase <- res$data$card$current_phase$name
+  
+  if (is.null(current_phase) || length(current_phase) == 0) {
+    current_phase <- NA_character_
+  }
+  
+  if (is.null(child_relations) || nrow(child_relations) == 0) {
+    warning(
+      paste0(
+        "DEBUG Pipefy: child_relations vazio para card na fase esperada '",
+        phase_name,
+        "' (fase retornada: '",
+        current_phase,
+        "')."
+      )
+    )
+    return(character(0))
+  }
+  
+  child_card_names <- if (phase_name == "Aguardando Aprovação (PGR)") {
+    c("Historico Reprovação", "Historico de Reprovação")
+  } else {
+    c("Historico de Reprovação", "Historico Reprovação")
+  }
+  
+  available_names <- unique(child_relations$name)
 
-  card_id <- res$data$card$child_relations |> 
+  card_id <- child_relations |> 
     unnest(cols = c(cards)) |> 
-    filter(name == child_card_name) |> 
-    pull(id)
+    filter(name %in% child_card_names) |> 
+    pull(id) |>
+    unique()
+  
+  if (length(card_id) == 0) {
+    warning(
+      paste0(
+        "DEBUG Pipefy: nenhuma child relation encontrada. Esperadas: [",
+        paste(child_card_names, collapse = ", "),
+        "]. Disponíveis no card: [",
+        paste(available_names, collapse = ", "),
+        "]."
+      )
+    )
+  }
   
   return(card_id)
 }

@@ -57,17 +57,27 @@ server <- function(input, output, session) {
 
     card_phase <- get_card_phase(input$card_id, card_data$all_cards) 
     id_do_card <- get_card_id(input$card_id, card_data$all_cards)
+    
+    message(
+      "DEBUG buscar: titulo='",
+      input$card_id,
+      "' | id='",
+      id_do_card,
+      "' | fase_esperada='",
+      card_phase,
+      "'"
+    )
   
     
     showLoadingModal(texto = "Buscando informações do card, por favor aguarde.")
 
     resposta_api <- get_card_info(card_id = id_do_card)
-    child_df  <- make_df_return(res = resposta_api, phase_name = card_phase)
     validacao <- validate_card(res = resposta_api, expected_phase = card_phase)
     
-    removeModal()
-
     if (validacao) {
+      child_df  <- make_df_return(res = resposta_api, phase_name = card_phase)
+      
+      message("DEBUG child_df linhas: ", nrow(child_df))
       
       doc_file <- get_doc_url_file( res = resposta_api, phase =  card_phase)
       parent_card_id <- get_parent_card_id(res = resposta_api)
@@ -77,8 +87,10 @@ server <- function(input, output, session) {
 
       
       
+      removeModal()
       return( list(resposta_api = resposta_api , file = doc_file ) )
     } else {
+      removeModal()
       return(NULL)
     }
   })
@@ -221,4 +233,3 @@ server <- function(input, output, session) {
 
 
  
-
